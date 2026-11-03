@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='utf-8'?>
+<scheme version="2.0" title="1단계 데이터 수집" description="File 위젯으로 daily_data.csv를 불러오고 Data Table로 확인">
+	<nodes>
+		<node id="0" name="File" qualified_name="Orange.widgets.data.owfile.OWFile" project_name="Orange3" version="" title="File" position="(100, 300)" />
+		<node id="1" name="Data Table" qualified_name="Orange.widgets.data.owtable.OWTable" project_name="Orange3" version="" title="Data Table" position="(260, 160)" />
+	</nodes>
+	<links>
+		<link id="0" source_node_id="0" sink_node_id="1" source_channel="Data" sink_channel="Data" enabled="true" source_channel_id="data" sink_channel_id="data" />
+	</links>
+	<annotations>
+		<text id="0" type="text/plain" rect="(40, 40, 380, 60)" font-family="Malgun Gothic" font-size="14">① 데이터 수집: File에서 grade 열 Type을 categorical로 변경</text>
+	</annotations>
+	<thumbnail />
+	<node_properties>
+		<properties node_id="0" format="pickle">gASVKwMAAAAAAAB9lCiMEmNvbnRyb2xBcmVhVmlzaWJsZZSIjAxyZWNlbnRfcGF0aHOUXZSMHm9y
+YW5nZXdpZGdldC51dGlscy5maWxlZGlhbG9nc5SMClJlY2VudFBhdGiUk5QpgZR9lCiMB2Fic3Bh
+dGiUjH1DOi9Vc2Vycy/rtoDsgrDrj5nshLHqs6Drk7HtlZnqtZAvRGVza3RvcC/tgbTroZzrk5wv
+642w7J207YSw6rO87ZWZL+yYpOugjOyngF/si5zrrqzroIjsnbTshZgvb3JhbmdlX3dvcmtmbG93
+cy9kYWlseV9kYXRhLmNzdpSMBnByZWZpeJSMB2Jhc2VkaXKUjAdyZWxwYXRolIwOZGFpbHlfZGF0
+YS5jc3aUjAV0aXRsZZSMAJSMBXNoZWV0lGgQjAtmaWxlX2Zvcm1hdJROdWJhjAtyZWNlbnRfdXJs
+c5RdlIwTc2F2ZWRXaWRnZXRHZW9tZXRyeZROjAtzaGVldF9uYW1lc5R9lIwGc291cmNllEsAjAN1
+cmyUaBCMDWRvbWFpbl9lZGl0b3KUfZSMC19fdmVyc2lvbl9flEsBjBBjb250ZXh0X3NldHRpbmdz
+lF2UjBVvcmFuZ2V3aWRnZXQuc2V0dGluZ3OUjAdDb250ZXh0lJOUKYGUfZQojAZ2YWx1ZXOUfZQo
+jAl2YXJpYWJsZXOUXZRoGn2UaCZdlChdlCiMBWdyYWRllIwUT3JhbmdlLmRhdGEudmFyaWFibGWU
+jBBEaXNjcmV0ZVZhcmlhYmxllJOUSwBoEIhlXZQojAZzdHJlc3OUaCyMEkNvbnRpbnVvdXNWYXJp
+YWJsZZSTlEsAaBCIZV2UKIwFc2xlZXCUaDJLAGgQiGVdlCiMCGV4ZXJjaXNllGgySwBoEIhlXZQo
+jBdlbGVjdHJvbmljX2RldmljZV91c2FnZZRoMksAaBCIZWVzaBxLAXWMCmF0dHJpYnV0ZXOUKGgr
+SwKGlGgwSwKGlGg0SwKGlGg2SwKGlGg4SwKGlHSUjAVtZXRhc5QpjApjbGFzc192YXJzlCmMEm1v
+ZGlmaWVkX3ZhcmlhYmxlc5RdlHViYXUu
+</properties>
+		<properties node_id="1" format="literal">{'auto_commit': True, 'color_by_class': True, 'controlAreaVisible': True, 'savedWidgetGeometry': None, 'select_rows': True, 'show_attribute_labels': True, 'show_distributions': False, 'stored_selection': {'rows': [], 'columns': []}, 'stored_sort': [], '__version__': 1}</properties>
+	</node_properties>
+	<session_state>
+		<window_groups />
+	</session_state>
+</scheme>

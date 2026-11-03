@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>데이터 과학 프로젝트 시뮬레이터 · 오렌지로 배우는 기계학습</title>
+<style>
+:root{
+  --bg:#f6f5f2; --surface:#fcfcfb; --card:#ffffff; --line:#e4e2dc; --line-2:#d3d0c8;
+  --ink:#0b0b0b; --ink-2:#52514e; --ink-3:#86847e;
+  --accent:#2a78d6; --accent-soft:#e8f1fc; --s2:#eb6834; --s3:#1baf7a;
+  --good:#1a7f37; --warn:#b26b00; --bad:#c62828;
+  --o-data:#ffd39f; --o-transform:#ff9d5e; --o-visual:#ffb7b1; --o-model:#fac1d9; --o-eval:#c3f3f3; --o-unsup:#cae1ef;
+  --radius:12px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Pretendard,"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;line-height:1.6;font-size:16px}
+a{color:var(--accent)}
+header.top{background:linear-gradient(120deg,#4b2c7a,#7a4fb0);color:#fff;padding:22px 24px 18px}
+header.top h1{margin:0;font-size:1.55rem;letter-spacing:-.02em}
+header.top p{margin:4px 0 0;opacity:.88;font-size:.95rem}
+nav.steps{position:sticky;top:0;z-index:20;background:var(--surface);border-bottom:1px solid var(--line);display:flex;gap:4px;overflow-x:auto;padding:8px 12px}
+nav.steps button{flex:0 0 auto;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font:inherit;font-size:.9rem;cursor:pointer;color:var(--ink-2);white-space:nowrap}
+nav.steps button .n{display:inline-block;width:20px;height:20px;border-radius:50%;background:var(--line);color:var(--ink-2);font-size:.75rem;line-height:20px;text-align:center;margin-right:6px;font-weight:700}
+nav.steps button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+nav.steps button.active .n{background:#fff;color:var(--accent)}
+nav.steps button.done .n{background:var(--s3);color:#fff}
+main{max-width:1180px;margin:0 auto;padding:22px 18px 80px}
+section.page{display:none}
+section.page.active{display:block}
+h2.title{font-size:1.5rem;margin:.2em 0 .1em;letter-spacing:-.02em}
+.stage-tag{display:inline-block;font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);margin-bottom:6px}
+.lead{color:var(--ink-2);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin:0 0 16px}
+.card h3{margin:0 0 10px;font-size:1.1rem;display:flex;align-items:center;gap:8px}
+.card h3 .chip{font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:6px;color:#fff;background:var(--ink-2)}
+.chip.ml{background:#6250d6}.chip.or{background:#eb6834}.chip.sim{background:#2a78d6}.chip.ck{background:#1a7f37}.chip.ppt{background:#b5476e}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:860px){.grid2,.grid3{grid-template-columns:1fr}}
+.box{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface)}
+.box h4{margin:0 0 6px;font-size:.98rem}
+.box p,.box ul{margin:0;font-size:.92rem;color:var(--ink-2)}
+ul.tight{margin:4px 0;padding-left:20px}ul.tight li{margin:2px 0}
+table.t{border-collapse:collapse;width:100%;font-size:.9rem}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+table.t th{background:#f1efea;font-weight:700;color:var(--ink-2)}
+table.t td.num,table.t th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr.best td{background:#eef7ee;font-weight:700}
+.scroll{overflow:auto;max-height:340px;border:1px solid var(--line);border-radius:8px}
+.scroll table.t th{position:sticky;top:0}
+td.miss{background:#fdecea;color:var(--bad);text-align:center}
+tr.outrow td{background:#fff4e5}
+/* 오렌지 위젯 흐름도 */
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 2px;padding:14px;background:#fbfaf7;border:1px dashed var(--line-2);border-radius:10px;margin:8px 0 12px}
+.w{display:flex;flex-direction:column;align-items:center;width:104px;text-align:center}
+.w .ic{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.35rem;border:3px solid rgba(0,0,0,.06);box-shadow:0 1px 0 rgba(0,0,0,.06)}
+.w .nm{font-size:.78rem;margin-top:4px;line-height:1.25;color:var(--ink)}
+.w .ct{font-size:.68rem;color:var(--ink-3)}
+.w.new .ic{outline:3px solid var(--bad);outline-offset:2px}
+.arrow{color:var(--ink-3);font-size:1.2rem;margin:0 2px 18px}
+.c-data .ic{background:var(--o-data)}.c-transform .ic{background:var(--o-transform)}.c-visual .ic{background:var(--o-visual)}
+.c-model .ic{background:var(--o-model)}.c-eval .ic{background:var(--o-eval)}.c-unsup .ic{background:var(--o-unsup)}
+.branch{display:flex;flex-direction:column;gap:6px}
+.branch .row{display:flex;align-items:center}
+ol.howto{margin:0;padding-left:22px}ol.howto li{margin:5px 0}
+.kbd{display:inline-block;font-size:.82rem;padding:0 6px;border:1px solid var(--line-2);border-bottom-width:2px;border-radius:5px;background:#fff;font-family:Consolas,monospace}
+.cat{font-weight:700;padding:0 5px;border-radius:4px}
+.cat.data{background:var(--o-data)}.cat.transform{background:var(--o-transform)}.cat.visual{background:var(--o-visual)}.cat.model{background:var(--o-model)}.cat.eval{background:var(--o-eval)}.cat.unsup{background:var(--o-unsup)}
+/* 컨트롤 */
+.controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:6px 0 12px}
+.controls label{font-size:.9rem;color:var(--ink-2);display:flex;align-items:center;gap:6px}
+select,input[type=number],input[type=text]{font:inherit;font-size:.9rem;padding:5px 8px;border:1px solid var(--line-2);border-radius:7px;background:#fff}
+input[type=number]{width:90px}
+button.btn{font:inherit;font-size:.92rem;padding:7px 14px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer}
+button.btn.ghost{background:#fff;color:var(--accent)}
+button.btn:disabled{opacity:.5;cursor:default}
+.radio-list label{display:block;margin:3px 0}
+.stat-row{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:120px}
+.stat .v{font-size:1.45rem;font-weight:800;font-variant-numeric:tabular-nums}
+.stat .l{font-size:.8rem;color:var(--ink-2)}
+.note{border-left:4px solid var(--accent);background:var(--accent-soft);padding:10px 14px;border-radius:0 8px 8px 0;font-size:.92rem;margin:10px 0}
+.note.warn{border-color:var(--warn);background:#fff6e5}
+.note.good{border-color:var(--good);background:#edf7ef}
+.result-text{background:#f4f2fb;border:1px solid #ddd6f3;border-radius:10px;padding:12px 14px;font-size:.93rem;white-space:pre-wrap}
+.checklist label{display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-size:.94rem}
+.checklist input{margin-top:5px}
+.pill{display:inline-block;font-size:.75rem;padding:1px 8px;border-radius:999px;background:#eee;color:var(--ink-2);margin-left:4px}
+.slides{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.slide{border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden;display:flex;flex-direction:column}
+.slide .hd{background:#4b2c7a;color:#fff;padding:8px 12px;font-weight:700;font-size:.92rem}
+.slide .bd{padding:10px 12px;font-size:.86rem;color:var(--ink-2);flex:1}
+.slide .ft{border-top:1px dashed var(--line);padding:7px 12px;font-size:.78rem;color:#b5476e;background:#fdf5f8}
+svg text{font-family:inherit}
+.chart{width:100%;height:auto;display:block}
+.tip{position:fixed;pointer-events:none;background:#1f1f1f;color:#fff;font-size:.8rem;padding:6px 9px;border-radius:6px;z-index:99;display:none;max-width:260px;line-height:1.4}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:.82rem;color:var(--ink-2);margin:4px 0}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.nextprev{display:flex;justify-content:space-between;margin-top:20px}
+.dl a{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;text-decoration:none;color:var(--ink);margin-bottom:8px}
+.dl a:hover{border-color:var(--accent)}
+.dl a b{font-size:.95rem}.dl a span{font-size:.82rem;color:var(--ink-2)}
+.quiz{display:flex;flex-direction:column;gap:6px}
+.quiz button{text-align:left;font:inherit;font-size:.92rem;padding:7px 10px;border:1px solid var(--line-2);background:#fff;border-radius:8px;cursor:pointer}
+.quiz button.ok{background:#edf7ef;border-color:var(--good)}
+.quiz button.no{background:#fdecea;border-color:var(--bad)}
+.dataset-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:.9rem}
+.dataset-bar b{color:var(--accent)}
+footer{color:var(--ink-3);font-size:.8rem;text-align:center;padding:20px}
+@media print{nav.steps,.nextprev,header.top{display:none}section.page{display:block!important;page-break-after:always}}
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>데이터 과학 프로젝트 시뮬레이터</h1>
+  <p>교과서 「Ⅳ. 데이터 과학 프로젝트 · 일상생활의 데이터에 기반한 스트레스 지수 예측」을 오렌지(Orange) 프로그램 단계별로 따라 하고, 나만의 데이터로 바꿔서 연습하는 곳</p>
+</header>
+<nav class="steps" id="stepnav"></nav>
+<main>
+<div class="dataset-bar" id="datasetBar"></div>
+
+<!-- ===================== 0. 개요 ===================== -->
+<section class="page" data-step="0" data-label="시작하기">
+  <span class="stage-tag">프로젝트 안내</span>
+  <h2 class="title">데이터 과학 프로젝트, 이렇게 진행해요</h2>
+  <p class="lead">교과서 샘플(스트레스 지수 예측)을 오렌지로 그대로 따라 한 뒤, <b>내 데이터</b>로 같은 과정을 반복하여 발표용 PPT를 완성합니다.</p>
+
+  <div class="card">
+    <h3><span class="chip ml">기계학습</span> 프로젝트 3단계와 6과정</h3>
+    <div class="grid3">
+      <div class="box"><h4>1단계 문제 정의</h4><p>해결하고 싶은 문제를 정하고, 그 문제를 데이터로 풀 수 있는지 확인<br><b>→ ① 문제 정의</b></p></div>
+      <div class="box"><h4>2단계 데이터 준비와 분석</h4><p>데이터를 모으고(EDA: 탐색적 데이터 분석) 정리·시각화하여 의미를 파악<br><b>→ ② 데이터 수집 ③ 데이터 전처리 ④ 시각화와 분석</b></p></div>
+      <div class="box"><h4>3단계 데이터 모델링과 평가</h4><p>예측 모델을 만들고, 성능을 비교·평가하여 활용 방안을 찾기<br><b>→ ⑤ 데이터 모델링 ⑥ 평가</b></p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip ml">기계학습</span> 기계학습 단계별로 꼭 필요한 것 한눈에 보기</h3>
+    <div class="scroll" style="max-height:none">
+    <table class="t">
+      <thead><tr><th>과정</th><th>기계학습에서 필요한 내용</th><th>오렌지 위젯</th><th>산출물 (PPT에 넣을 것)</th></tr></thead>
+      <tbody>
+        <tr><td><b>① 문제 정의</b></td><td>문제 상황, <b>예측할 값(target)</b> 정하기, 회귀/분류/군집 중 어떤 문제인지 결정, 필요한 데이터 조건(합법·윤리·품질) 점검</td><td>-</td><td>문제 상황, 탐구 질문, 가설, 데이터 점검표</td></tr>
+        <tr><td><b>② 데이터 수집</b></td><td>설문/공공데이터 수집, 속성(열)과 사례(행) 이해, 속성 <b>유형(numeric·categorical)</b>과 <b>역할(feature·target)</b> 설정</td><td><span class="cat data">Data</span> File, Data Table</td><td>속성 설명표, 데이터 개수·결측 비율</td></tr>
+        <tr><td><b>③ 데이터 전처리</b></td><td><b>결측치</b> 처리(삭제·평균 대체), <b>이상치</b> 확인(산점도·상자그림, IQR)과 제거, <b>정규화</b>(0~1)</td><td><span class="cat data">Data</span> Feature Statistics · <span class="cat transform">Transform</span> Impute, Select Rows, Preprocess · <span class="cat visual">Visualize</span> Scatter Plot, Box Plot</td><td>처리 전·후 데이터 수(83→81→65), 이상치 기준표</td></tr>
+        <tr><td><b>④ 시각화와 분석</b></td><td>속성별 <b>분포</b>, 속성 간 <b>상관계수</b>(−1~1), 모델에 쓸 핵심 속성 고르기</td><td><span class="cat visual">Visualize</span> Distributions · <span class="cat unsup">Unsupervised</span> Correlations</td><td>분포 그래프, 상관계수 표와 해석</td></tr>
+        <tr><td><b>⑤ 데이터 모델링</b></td><td><b>feature/target 분리</b>, <b>훈련:테스트 = 7:3 분할</b>, 여러 모델(선형 회귀·랜덤 포레스트·kNN·SVM) 학습</td><td><span class="cat transform">Transform</span> Select Columns, Data Sampler · <span class="cat model">Model</span> Linear Regression, Random Forest, kNN, SVM</td><td>사용한 속성·모델, 워크플로 캡처</td></tr>
+        <tr><td><b>⑥ 평가</b></td><td><b>교차 검증</b>, 성능 지표(회귀: MSE·RMSE·MAE·R² / 분류: CA·F1·Precision·Recall), 모델 비교, 결과 해석과 한계·윤리 성찰</td><td><span class="cat eval">Evaluate</span> Test and Score, Predictions</td><td>성능 비교표, 최적 모델과 이유, 제안·한계</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip or">오렌지</span> 준비물</h3>
+    <ol class="howto">
+      <li>오렌지(Orange Data Mining) 설치: <a href="https://orangedatamining.com/download/" target="_blank" rel="noopener">orangedatamining.com/download</a></li>
+      <li>아래 <b>다운로드</b>에서 예제 데이터 <code>daily_data.csv</code>와 단계별 워크플로 파일(.ows)을 받아 <b>같은 폴더</b>에 저장합니다.</li>
+      <li>오렌지에서 <span class="kbd">File → Open</span>으로 .ows 파일을 열면 해당 단계까지 완성된 워크플로가 나타납니다. 직접 만들어 본 뒤 비교용으로 쓰세요.</li>
+      <li>이 웹 시뮬레이터는 오렌지와 <b>같은 순서·같은 계산</b>을 브라우저에서 보여 줍니다. 위쪽 데이터 막대에서 <b>내 CSV 파일</b>로 바꿔 미리 실험해 볼 수 있습니다.</li>
+    </ol>
+  </div>
+
+  <div class="card dl" id="downloads">
+    <h3><span class="chip or">다운로드</span> 예제 데이터와 단계별 오렌지 워크플로</h3>
+    <div class="grid2">
+      <div>
+        <a href="daily_data.csv" download><b>📄 daily_data.csv</b><span>예제 데이터 · 83명 × 5개 속성 · 결측치 2개</span></a>
+        <a href="orange_workflows/1_데이터수집.ows" download><b>🍊 1_데이터수집.ows</b><span>File → Data Table</span></a>
+        <a href="orange_workflows/2_데이터전처리.ows" download><b>🍊 2_데이터전처리.ows</b><span>+ Feature Statistics, Scatter/Box Plot, Impute, Select Rows, Preprocess</span></a>
+      </div>
+      <div>
+        <a href="orange_workflows/3_시각화와분석.ows" download><b>🍊 3_시각화와분석.ows</b><span>+ Distributions, Correlations</span></a>
+        <a href="orange_workflows/4_데이터모델링.ows" download><b>🍊 4_데이터모델링.ows</b><span>+ Select Columns, Data Sampler, 4개 회귀 모델</span></a>
+        <a href="orange_workflows/5_평가_전체워크플로.ows" download><b>🍊 5_평가_전체워크플로.ows</b><span>+ Test and Score, Predictions (완성본)</span></a>
+      </div>
+    </div>
+    <p class="note">⚠ .ows 파일과 daily_data.csv는 <b>같은 폴더</b>에 두어야 자동으로 데이터를 불러옵니다. 내 데이터로 바꿀 때는 File 위젯에서 파일만 바꾸고, Select Rows·Select Columns 조건을 내 속성에 맞게 다시 설정하세요.</p>
+  </div>
+</section>
+
+<!-- ===================== 1. 문제 정의 ===================== -->
+<section class="page" data-step="1" data-label="문제 정의">
+  <span class="stage-tag">1단계 문제 정의 · ① 문제 정의</span>
+  <h2 class="title">무엇을 예측하고 싶은가?</h2>
+  <p class="lead">샘플: “일상생활의 데이터 중 스트레스에 영향을 줄 수 있는 것은 무엇일까?” — 청소년 스트레스 인지율이 높아지는 문제(통계청)를 출발점으로 삼았습니다.</p>
+
+  <div class="card">
+    <h3><span class="chip ml">기계학습</span> 이 단계에서 필요한 내용</h3>
+    <div class="grid2">
+      <div class="box"><h4>① 문제를 ‘예측 질문’으로 바꾸기</h4>
+        <ul class="tight"><li>문제 상황: 스트레스로 어려움을 겪는 청소년 증가</li><li>탐구 질문: <b>수면·운동·전자 기기 사용 시간으로 스트레스 지수를 예측할 수 있을까?</b></li><li>가설: 수면 시간이 적을수록 스트레스 지수가 높을 것이다.</li></ul></div>
+      <div class="box"><h4>② 예측할 값(target)과 단서(feature) 정하기</h4>
+        <ul class="tight"><li><b>target</b>(정답, 예측 대상): stress</li><li><b>feature</b>(단서, 입력): sleep, exercise, electronic_device_usage</li><li>target이 숫자 → <b>회귀</b>, 범주 → <b>분류</b>, target 없음 → <b>군집</b></li></ul></div>
+    </div>
+    <h4 style="margin:14px 0 6px">어떤 기계학습 문제일까? (빠른 확인)</h4>
+    <div class="quiz" id="quiz1"></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip ck">점검</span> 데이터 점검 체크리스트 (교과서 180~181쪽)</h3>
+    <div class="grid2">
+      <div class="checklist" id="check1a"></div>
+      <div>
+        <div class="box"><h4>좋은 데이터의 조건</h4><p>정확성(‘99.99.99.’ 같은 잘못된 값 없음) · 유효성(성별에 ‘사람’ 같은 값 없음) · 통일성(날짜 형식 통일) · 중복 없음</p></div>
+        <div class="box" style="margin-top:8px"><h4>사용할 수 없는 데이터</h4><p>동의 없이 수집한 데이터 · 민감한 개인 정보(주민 등록 번호, 건강 기록) · 출처 불분명 · 왜곡·편향된 데이터</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip ppt">PPT</span> 슬라이드에 담을 내용</h3>
+    <ul class="tight">
+      <li><b>표지</b>: 프로젝트 제목, 모둠명/이름</li>
+      <li><b>문제 정의</b>: 문제 상황(근거가 되는 통계·기사), 탐구 질문, 가설</li>
+      <li><b>기계학습 유형</b>: target과 feature, 회귀/분류 중 선택한 이유</li>
+      <li><b>데이터 점검표</b>: 위 체크리스트 결과</li>
+    </ul>
+  </div>
+  <div class="nextprev"></div>
+</section>
+
+<!-- ===================== 2. 데이터 수집 ===================== -->
+<section class="page" data-step="2" data-label="데이터 수집">
+  <span class="stage-tag">2단계 데이터 준비와 분석 · ② 데이터 수집</span>
+  <h2 class="title">데이터를 모으고 오렌지로 불러오기</h2>
+  <p class="lead">설문으로 고등학생 83명의 일상 데이터를 모았습니다. 직접 수집할 때는 선택지와 단위를 명확히 제시해야 나중에 전처리가 쉬워요.</p>
+
+  <div class="card">
+    <h3><span class="chip ml">기계학습</span> 이 단계에서 필요한 내용</h3>
+    <div class="grid2">
+      <div class="box"><h4>설문 문항 만들기</h4><ul class="tight"><li>다양한 형식이 가능한 문항 → <b>선택지 제시</b> (학년: 1학년/2학년/3학년)</li><li>다양한 단위가 가능한 문항 → <b>단위 명시</b> (수면 시간: 단위 시간)</li><li>과도한 개인 정보 X, 수집 목적 밝히기, 솔직하게 답할 분위기</li></ul></div>
+      <div class="box"><h4>속성의 유형(Type)과 역할(Role)</h4><ul class="tight"><li><b>numeric</b>(수치형): 크기 비교·평균 가능 (수면 시간)</li><li><b>categorical</b>(범주형): 종류를 나타냄 (학년 1·2·3 → 숫자지만 범주!)</li><li>Role: <b>feature</b>(입력), <b>target</b>(예측 대상), meta, skip</li></ul></div>
+    </div>
+    <table class="t" style="margin-top:12px">
+      <thead><tr><th>속성명</th><th>내용</th><th>유형(단위)</th></tr></thead>
+      <tbody>
+        <tr><td>grade</td><td>학년</td><td>범주 (1, 2, 3)</td></tr>
+        <tr><td>stress</td><td>스트레스 지수</td><td>숫자 (0~40의 정수)</td></tr>
+        <tr><td>sleep</td><td>수면 시간</td><td>숫자 (시간, 예: 30분 = 0.5)</td></tr>
+        <tr><td>exercise</td><td>운동 시간</td><td>숫자 (분)</td></tr>
+        <tr><td>electronic_device_usage</td><td>전자 기기 사용 시간</td><td>숫자 (시간)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip or">오렌지</span> 따라 하기</h3>
+    <div class="flow" data-flow="f2"></div>
+    <ol class="howto">
+      <li>왼쪽 위젯 목록 <span class="cat data">Data</span> 에서 <b>File</b> 위젯을 캔버스로 끌어옵니다.</li>
+      <li>File 위젯을 더블클릭 → 📁 버튼으로 <code>daily_data.csv</code>를 엽니다.</li>
+      <li>Columns 표에서 <b>grade</b>의 Type을 더블클릭하여 <b>numeric → categorical</b>로 바꾸고 <span class="kbd">Apply</span>를 누릅니다.</li>
+      <li><span class="cat data">Data</span> 의 <b>Data Table</b> 위젯을 File 오른쪽에 놓고 선을 연결합니다.</li>
+      <li>Data Table 왼쪽 Info에서 <b>데이터 수(instances)</b>, <b>속성 수(features)</b>, <b>결측 비율(missing data)</b>을 확인합니다.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip sim">시뮬레이션</span> File 위젯 — 속성 유형과 역할 설정</h3>
+    <p style="margin:0 0 8px;font-size:.92rem;color:var(--ink-2)">유형(Type)을 바꾸면 다음 단계의 모든 분석에 반영됩니다. 샘플에서는 <b>grade를 categorical</b>로 바꿔 보세요.</p>
+    <div id="fileWidget"></div>
+  </div>
+  <div class="card">
+    <h3><span class="chip sim">시뮬레이션</span> Data Table 위젯</h3>
+    <div id="dataTableInfo"></div>
+    <div class="scroll" id="dataTable"></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip ppt">PPT</span> 슬라이드에 담을 내용</h3>
+    <ul class="tight"><li>데이터 출처와 수집 방법(설문 대상·기간·배포 방법 또는 공공데이터 사이트 이름)</li><li>속성 설명표(속성명·내용·유형·단위)</li><li>오렌지 File / Data Table 화면 캡처 + 데이터 수, 결측 비율</li></ul>
+  </div>
+  <div class="nextprev"></div>
+</section>
+
+<!-- ===================== 3. 전처리 ===================== -->
+<section class="page" data-step="3" data-label="데이터 전처리">
+  <span class="stage-tag">2단계 데이터 준비와 분석 · ③ 데이터 전처리</span>
+  <h2 class="title">결측치 → 이상치 → 정규화</h2>
+  <p class="lead">모델은 데이터의 품질만큼만 똑똑해집니다(Garbage in, garbage out). 비어 있거나 튀는 값을 정리하고, 크기가 다른 속성을 같은 범위로 맞춥니다.</p>
+
+  <div class="card">
+    <h3><span class="chip ml">기계학습</span> 이 단계에서 필요한 내용</h3>
+    <div class="grid3">
+      <div class="box"><h4>결측치 (missing value)</h4><p>값이 비어 있는 칸. 비율이 <b>적으면 행 삭제</b>, 많으면 <b>평균/중앙값/최빈값으로 대체</b>(삭제하면 데이터 손실이 커짐)</p></div>
+      <div class="box"><h4>이상치 (outlier)</h4><p>다른 값과 동떨어진 값. 산점도·상자그림으로 찾고 <b>IQR 규칙</b>으로 범위를 정함<br>최솟값 = Q1 − 1.5×IQR, 최댓값 = Q3 + 1.5×IQR (IQR = Q3 − Q1). 속성 의미에 따라 조정(시간은 음수 불가 → 0)</p></div>
+      <div class="box"><h4>정규화 (normalization)</h4><p>속성마다 단위·크기가 달라(운동 0~240분, 수면 3~10시간) 거리 기반 모델(kNN, SVM)이 큰 값에 끌려감 → <b>0~1 범위</b>로 맞춤<br>x' = (x − 최솟값) / (최댓값 − 최솟값)</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip or">오렌지</span> 따라 하기</h3>
+    <div class="flow" data-flow="f3"></div>
+    <ol class="howto">
+      <li><b>결측치 확인</b>: <span class="cat data">Data</span> Feature Statistics 위젯 연결 → Missing 열 확인 (electronic_device_usage에 2개)</li>
+      <li><b>결측치 처리</b>: <span class="cat transform">Transform</span> Impute 위젯을 File에 연결 → Default Method에서 <b>Remove instances with unknown values</b> 선택 (83 → 81)</li>
+      <li><b>이상치 확인</b>: <span class="cat visual">Visualize</span> Scatter Plot (x: exercise, y: sleep, Color: stress), Box Plot으로 Q1·Q3 확인</li>
+      <li><b>이상치 제거</b>: <span class="cat transform">Transform</span> Select Rows를 Impute에 연결 → <span class="kbd">Add Condition</span>으로 속성별 <b>is between</b> 범위 입력 (81 → 65)</li>
+      <li><b>정규화</b>: <span class="cat transform">Transform</span> Preprocess를 Select Rows의 <b>Matching Data</b>에 연결 → Normalize Features → <b>Normalize to interval [0, 1]</b></li>
+      <li>Data Table·Box Plot을 Preprocess에 연결해 정규화 결과 확인</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip sim">시뮬레이션</span> ❶ Feature Statistics + Impute</h3>
+    <div class="scroll" id="featStats" style="max-height:none"></div>
+    <div class="grid2" style="margin-top:12px">
+      <div class="box radio-list" id="imputeOpts"></div>
+      <div id="imputeResult"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip sim">시뮬레이션</span> ❷ Scatter Plot으로 이상치 찾기</h3>
+    <div class="controls" id="scatterCtl"></div>
+    <div id="scatterPlot"></div>
+    <p style="font-size:.85rem;color:var(--ink-3);margin:4px 0 0">주황 테두리 점 = 아래 Select Rows 범위를 벗어나 제거될 데이터</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip sim">시뮬레이션</span> ❸ Box Plot + Select Rows (이상치 확인 범위)</h3>
+    <div class="grid2">
+      <div><div class="controls" id="boxCtl"></div><div id="boxPlot"></div></div>
+      <div><div id="rangeTable"></div><div id="filterResult"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip sim">시뮬레이션</span> ❹ Preprocess (정규화)</h3>
+    <div class="controls" id="normCtl"></div>
+    <div class="grid2"><div class="scroll" id="normTable"></div><div id="normBox"></div></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip ppt">PPT</span> 슬라이드에 담을 내용</h3>
+    <ul class="tight"><li>결측치: 어느 속성에 몇 개, 어떤 방법으로 처리했고 <b>왜</b> 그 방법을 골랐는지</li><li>이상치: 산점도/상자그림 캡처 + 이상치 확인 범위 표(Q1·Q3·IQR) + 처리 결과</li><li>정규화 전·후 비교 캡처, 처리 단계별 데이터 수 변화 (예: 83 → 81 → 65)</li></ul>
+  </div>
+  <div class="nextprev"></div>
+</section>
+
+<!-- ===================== 4. 시각화와 분석 ===================== -->
+<section class="page" data-step="4" data-label="시각화와 분석">
+  <span class="stage-tag">2단계 데이터 준비와 분석 · ④ 데이터 시각화와 분석</span>
+  <h2 class="title">분포와 상관관계로 데이터 이해하기</h2>
+  <p class="lead">모델을 만들기 전에 각 속성이 어떻게 퍼져 있는지, 어떤 속성이 target과 관계가 깊은지 확인합니다.</p>
+
+  <div class="card">
+    <h3><span class="chip ml">기계학습</span> 이 단계에서 필요한 내용</h3>
+    <div class="grid2">
+      <div class="box"><h4>분포 (Distributions)</h4><p>값이 어느 구간에 많이 모여 있는지(히스토그램). 치우침·빈도·이상치를 확인하여 데이터의 특징을 문장으로 설명합니다.</p></div>
+      <div class="box"><h4>상관계수 (Pearson r)</h4><p>−1 ~ 1. 부호는 방향(+: 함께 증가, −: 반대로 변화), 크기는 강도.<br>|r| ≥ 0.7 강함 · 0.4~0.7 중간 · 0.2~0.4 약함 · 0.2 미만 거의 없음<br><b>⚠ 상관관계 ≠ 인과관계</b></p></div>
+    </div>
+    <p class="note warn">분석에 사용한 데이터는 특정 집단(우리 학교 학생 등)에서 수집한 것이므로 결과를 모든 청소년에게 일반화하는 데는 한계가 있어요.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip or">오렌지</span> 따라 하기</h3>
+    <div class="flow" data-flow="f4"></div>
+    <ol class="howto">
+      <li><span class="cat visual">Visualize</span> <b>Distributions</b>를 Preprocess에 연결 → Variable 목록에서 속성을 바꿔 가며 분포 확인</li>
+      <li><span class="cat unsup">Unsupervised</span> <b>Correlations</b>를 Preprocess에 연결 → Pearson correlation 순위 확인</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip sim">시뮬레이션</span> Distributions</h3>
+    <div class="controls" id="distCtl"></div>
+    <div id="distPlot"></div>
+    <div class="result-text" id="distText"></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip sim">시뮬레이션</span> Correlations</h3>
+    <div class="grid2"><div id="corrList"></div><div><div class="result-text" id="corrText"></div></div></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip ppt">PPT</span> 슬라이드에 담을 내용</h3>
+    <ul class="tight"><li>핵심 속성의 분포 그래프 + 한두 문장 해석 (“많은 학생이 중간 정도의 스트레스를 경험한다”)</li><li>상관계수 표 + target과 가장 관계 깊은 속성, 방향 해석</li><li>모델에 사용할 속성을 고른 근거</li></ul>
+  </div>
+  <div class="nextprev"></div>
+</section>
+
+<!-- ===================== 5. 모델링 ===================== -->
+<section class="page" data-step="5" data-label="데이터 모델링">
+  <span class="stage-tag">3단계 데이터 모델링과 평가 · ⑤ 데이터 모델링</span>
+  <h2 class="title">feature/target 나누고, 7:3으로 나누고, 여러 모델 학습하기</h2>
+  <p class="lead">target이 숫자(stress)이므로 <b>회귀 모델</b>을 사용합니다. 하나의 모델만 쓰지 말고 여러 모델을 비교해야 최적의 방법을 고를 수 있어요.</p>
+
+  <div class="card">
+    <h3><span class="chip ml">기계학습</span> 이 단계에서 필요한 내용</h3>
+    <div class="grid2">
+      <div class="box"><h4>훈련 데이터 vs 테스트 데이터</h4><p>모델은 <b>훈련 데이터(70%)</b>로 학습하고, 한 번도 보지 못한 <b>테스트 데이터(30%)</b>로 실력을 확인합니다. 시험 문제를 미리 보고 공부하면 실력을 알 수 없는 것과 같아요.<br><b>과적합</b>: 훈련 데이터만 너무 잘 외워서 새 데이터에서는 성능이 떨어지는 현상</p></div>
+      <div class="box"><h4>재현 가능한 샘플링</h4><p>Data Sampler는 무작위로 나누므로 실행할 때마다 결과가 달라질 수 있습니다. <b>Replicable (deterministic) sampling</b>을 체크하면 같은 결과가 나옵니다. 분류 문제에서는 <b>Stratify sample</b>로 클래스 비율을 유지하세요.</p></div>
+    </div>
+    <table class="t" style="margin-top:12px">
+      <thead><tr><th>모델</th><th>원리 (쉽게)</th><th>장점</th><th>주의할 점</th></tr></thead>
+      <tbody>
+        <tr><td><b>Linear Regression</b><br><span class="pill">회귀</span></td><td>데이터를 가장 잘 지나는 직선(평면) y = a₁x₁ + a₂x₂ + … + b 를 찾음</td><td>해석이 쉬움(계수 = 영향의 크기와 방향)</td><td>곡선 관계는 잘 못 잡음</td></tr>
+        <tr><td><b>Random Forest</b><br><span class="pill">회귀·분류</span></td><td>무작위로 만든 결정 트리 여러 개의 예측을 평균/투표</td><td>복잡한 관계도 잘 학습, 안정적</td><td>데이터가 적으면 과적합 가능</td></tr>
+        <tr><td><b>kNN</b><br><span class="pill">회귀·분류</span></td><td>가장 가까운 k개(기본 5) 이웃의 값을 평균/투표</td><td>원리가 직관적</td><td>거리 계산 → <b>정규화가 필수</b></td></tr>
+        <tr><td><b>SVM</b><br><span class="pill">회귀·분류</span></td><td>오차 허용 범위(ε) 안에 데이터가 최대한 들어오는 경계를 찾음</td><td>이상치에 비교적 강함</td><td>설정값(커널, C)에 민감</td></tr>
+        <tr><td><b>Logistic Regression</b> · <b>Naive Bayes</b><br><span class="pill">분류</span></td><td>범주(예: 합격/불합격)일 확률을 계산</td><td>빠르고 해석 쉬움</td><td>target이 범주형일 때 사용</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip or">오렌지</span> 따라 하기</h3>
+    <div class="flow" data-flow="f5"></div>
+    <ol class="howto">
+      <li><span class="cat transform">Transform</span> <b>Select Columns</b>를 Preprocess에 연결 → Features: sleep, exercise, electronic_device_usage / Target: stress / grade는 Ignored로</li>
+      <li><span class="cat transform">Transform</span> <b>Data Sampler</b>를 Select Columns에 연결 → Fixed proportion of data <b>70%</b>, Replicable sampling·Stratify sample 체크 → <span class="kbd">Sample Data</span> (65 → 46 | 19)</li>
+      <li><span class="cat model">Model</span> <b>Linear Regression, Random Forest, kNN, SVM</b>을 Data Sampler의 Data Sample에 각각 연결</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip sim">시뮬레이션</span> Select Columns + Data Sampler + 모델 학습</h3>
+    <div class="grid2">
+      <div>
+        <div id="roleEditor"></div>
+      </div>
+      <div>
+        <div class="controls" style="flex-direction:column;align-items:flex-start" id="samplerCtl"></div>
+        <div id="modelPick"></div>
+        <button class="btn" id="trainBtn" style="margin-top:10px">▶ 모델 학습하고 평가하기</button>
+        <div id="trainMsg" style="margin-top:8px;font-size:.9rem"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip ppt">PPT</span> 슬라이드에 담을 내용</h3>
+    <ul class="tight"><li>feature와 target, 데이터 분할 비율(훈련/테스트 개수)</li><li>사용한 모델 목록과 선택 이유</li><li>오렌지 전체 워크플로 캡처</li></ul>
+  </div>
+  <div class="nextprev"></div>
+</section>
+
+<!-- ===================== 6. 평가 ===================== -->
+<section class="page" data-step="6" data-label="평가">
+  <span class="stage-tag">3단계 데이터 모델링과 평가 · ⑥ 평가</span>
+  <h2 class="title">어떤 모델이 가장 잘 예측할까?</h2>
+  <p class="lead">Test and Score로 여러 모델의 성능 지표를 비교하고, 결과를 해석하여 문제 해결 방안과 한계를 정리합니다.</p>
+
+  <div class="card">
+    <h3><span class="chip ml">기계학습</span> 이 단계에서 필요한 내용</h3>
+    <div class="grid2">
+      <div class="box"><h4>회귀 모델 지표 (target이 숫자)</h4><ul class="tight">
+        <li><b>MSE</b> 평균 제곱 오차: (실제−예측)²의 평균 → <b>작을수록 좋음</b></li>
+        <li><b>RMSE</b> = √MSE: target과 같은 단위의 평균 오차</li>
+        <li><b>MAE</b> 평균 절대 오차: |실제−예측|의 평균</li>
+        <li><b>R²</b> 결정 계수: 모델이 설명하는 변동의 비율, <b>1에 가까울수록 좋음</b> (0 이하면 평균으로 찍는 것보다 못함)</li>
+        <li>MAPE는 실제값이 0에 가까우면 매우 커지므로 정규화 데이터에서는 해석에 주의</li></ul></div>
+      <div class="box"><h4>분류 모델 지표 (target이 범주)</h4><ul class="tight">
+        <li><b>CA</b> 정확도: 맞힌 비율</li>
+        <li><b>Precision</b> 정밀도: ‘A’라고 예측한 것 중 실제 A의 비율</li>
+        <li><b>Recall</b> 재현율: 실제 A 중 A라고 맞힌 비율</li>
+        <li><b>F1</b>: 정밀도와 재현율의 조화 평균</li>
+        <li><b>혼동 행렬</b>: 어떤 범주를 어떤 범주로 헷갈렸는지</li></ul></div>
+    </div>
+    <div class="box" style="margin-top:12px"><h4>교차 검증 (Cross validation)</h4><p>훈련 데이터를 k개(예: 5개)로 나누어 한 조각씩 돌아가며 시험용으로 쓰고 평균 성능을 냅니다. 데이터가 적을 때 한 번의 분할 운에 좌우되지 않게 해 줍니다. 오렌지 Test and Score의 기본 방식입니다.</p></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip or">오렌지</span> 따라 하기</h3>
+    <div class="flow" data-flow="f6"></div>
+    <ol class="howto">
+      <li><span class="cat eval">Evaluate</span> <b>Test and Score</b>를 추가 → Data Sampler(Data Sample)와 4개 모델(Learner)을 모두 연결</li>
+      <li>Test and Score를 더블클릭 → <b>Cross validation, Number of folds: 5</b> → 모델별 MSE·RMSE·MAE·R² 확인</li>
+      <li>아래쪽 <b>Compare models by</b> 표: 두 모델 간 비교(값이 작을수록 예측이 비슷)</li>
+      <li>(심화) <span class="cat eval">Evaluate</span> <b>Predictions</b>에 Data Sampler의 <b>Remaining Data</b>(테스트 30%)와 모델(Model)을 연결하면 처음 보는 데이터에 대한 예측값을 확인할 수 있어요.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip sim">시뮬레이션</span> Test and Score 결과</h3>
+    <div id="evalArea"><p class="note">⑤ 데이터 모델링 단계에서 <b>▶ 모델 학습하고 평가하기</b>를 먼저 눌러 주세요.</p></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip ck">성찰</span> 결과 해석과 윤리적 점검</h3>
+    <div class="checklist" id="check6"></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip ppt">PPT</span> 슬라이드에 담을 내용</h3>
+    <ul class="tight"><li>Test and Score 성능 비교표 캡처 + 최적 모델과 그 근거(지표 수치)</li><li>모델이 알려 준 것(예: 수면 시간이 스트레스 예측에 가장 중요)</li><li>문제 해결 제안(누구에게, 무엇을), 한계(데이터 수·편향·인과 아님)와 개선 방향</li></ul>
+  </div>
+  <div class="nextprev"></div>
+</section>
+
+<!-- ===================== 7. PPT ===================== -->
+<section class="page" data-step="7" data-label="PPT 만들기">
+  <span class="stage-tag">과제 · 나만의 데이터로 PPT 만들기</span>
+  <h2 class="title">발표 자료(PPT) 구성 가이드</h2>
+  <p class="lead">아래 12장 구성을 기본 틀로 사용하세요. 각 장의 분홍색 줄은 <b>오렌지에서 캡처해 넣을 화면</b>입니다.</p>
+
+  <div class="card">
+    <h3><span class="chip ppt">PPT</span> 추천 슬라이드 구성</h3>
+    <div class="slides" id="slides"></div>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip sim">자동 요약</span> 내 시뮬레이션 결과 요약 (PPT 초안에 활용)</h3>
+    <p style="font-size:.9rem;color:var(--ink-2);margin:0 0 8px">지금 불러온 데이터와 설정으로 계산된 결과입니다. 그대로 붙이지 말고, <b>오렌지에서 직접 실행한 결과</b>와 비교하여 자신의 말로 고쳐 쓰세요.</p>
+    <div class="result-text" id="summaryText"></div>
+    <button class="btn ghost" id="copySummary" style="margin-top:8px">📋 요약 복사</button>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip ck">평가</span> 프로젝트 자기 평가 (교과서 193·195쪽)</h3>
+    <table class="t">
+      <thead><tr><th>과정</th><th>평가 기준</th><th>우수</th><th>보통</th><th>미흡</th></tr></thead>
+      <tbody id="rubric"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3><span class="chip ml">주제 아이디어</span> 나만의 데이터 찾기</h3>
+    <div class="grid3">
+      <div class="box"><h4>직접 설문</h4><p>급식 선호도와 잔반량, 수면·공부 시간과 성적 만족도, 스마트폰 사용과 집중도, 등교 시간과 지각</p></div>
+      <div class="box"><h4>공공데이터</h4><p>공공데이터포털(data.go.kr), 서울 열린데이터광장, 기상자료개방포털, 통계청 KOSIS — 유기 동물, AED 설치, 미세먼지, 따릉이 대여량</p></div>
+      <div class="box"><h4>교과서 협력 프로젝트</h4><p>① 문화: 연령대별 선호 공연 ② 반려동물: 지역 생활 정보 ③ 스포츠: 축구 선수 기량 분석</p></div>
+    </div>
+    <p class="note">💡 데이터 조건: 행(사례) <b>50개 이상</b> 권장, target 1개 + feature 2개 이상, CSV(쉼표 구분, 첫 줄은 속성 이름)로 저장. 한글 엑셀 파일은 <b>CSV UTF-8</b>로 저장하세요.</p>
+  </div>
+  <div class="nextprev"></div>
+</section>
+</main>
+<footer>교과서 「Ⅳ. 데이터 과학 프로젝트」(174~195쪽) 학습용 시뮬레이터 · 예제 데이터는 교과서 데이터를 본떠 만든 연습용 가상 데이터입니다. · 계산은 모두 브라우저 안에서 이루어지며 업로드한 파일은 외부로 전송되지 않습니다.</footer>
+<div class="tip" id="tip"></div>
+<script src="engine.js"></script>
+<script>window.SAMPLE_CSV = "grade,stress,sleep,exercise,electronic_device_usage\n2,40,5.0,10.0,7.0\n2,16,6.0,180.0,2.5\n2,8,8.0,60.0,5.0\n2,9,7.5,0.0,2.0\n1,25,5.5,0.0,5.0\n3,10,6.5,26.4,3.0\n1,25,5.5,20.0,5.0\n2,15,5.5,60.0,18.0\n2,17,5.5,30.0,10.0\n2,27,6.0,26.4,2.5\n2,21,6.5,30.0,7.5\n1,9,8.0,30.0,2.5\n2,24,7.5,6.0,14.0\n2,2,8.0,60.0,2.5\n2,16,6.5,45.0,9.0\n1,7,7.0,30.0,4.0\n2,2,6.0,45.0,4.0\n2,1,7.0,120.0,6.5\n2,14,7.5,30.0,3.0\n1,12,7.0,45.0,2.5\n2,4,8.0,3.0,2.5\n2,15,8.0,10.0,5.0\n3,13,6.0,0.0,4.0\n2,9,6.5,6.0,2.5\n3,12,7.0,90.0,5.0\n2,21,6.0,6.0,3.0\n2,12,11.0,90.0,1.5\n2,24,5.0,20.0,4.5\n1,15,7.0,6.0,3.5\n2,24,5.5,0.0,1.5\n2,14,7.5,10.0,3.5\n2,3,7.0,10.0,3.0\n2,17,5.0,10.0,5.0\n1,21,6.0,30.0,4.5\n2,29,20.0,20.0,9.0\n1,25,5.5,0.0,1.5\n2,25,3.5,60.0,4.0\n2,1,7.5,120.0,1.5\n2,24,4.0,20.0,5.0\n2,28,4.0,45.0,9.0\n2,23,4.5,3.0,\n2,24,5.0,10.0,1.5\n1,13,5.0,120.0,6.5\n2,10,5.0,120.0,5.5\n2,17,6.5,6.0,\n2,38,7.5,30.0,4.5\n2,18,5.5,0.0,7.5\n2,13,6.5,120.0,4.5\n1,33,4.5,3.0,5.5\n2,22,6.0,6.0,4.5\n2,16,5.0,26.4,12.0\n2,20,6.0,0.0,8.5\n1,9,6.5,30.0,9.0\n1,23,5.5,10.0,3.5\n1,17,5.5,26.4,4.5\n2,22,4.5,3.0,5.5\n2,15,5.0,45.0,3.0\n2,10,6.0,26.4,1.5\n1,2,7.0,120.0,4.5\n2,17,7.0,0.0,4.0\n2,13,7.0,3.0,6.0\n2,16,7.0,10.0,8.0\n1,17,5.5,60.0,1.5\n1,14,5.5,45.0,4.0\n2,3,9.0,6.0,9.0\n2,21,6.0,30.0,4.5\n2,10,6.0,90.0,7.0\n2,12,6.5,0.0,3.0\n1,12,7.0,240.0,4.5\n2,24,6.0,10.0,3.0\n2,19,7.0,0.0,4.0\n2,14,6.5,20.0,3.0\n1,18,8.0,3.0,2.5\n2,6,7.0,120.0,2.0\n2,24,5.5,26.4,6.0\n2,17,7.0,26.4,3.5\n1,21,7.0,30.0,5.0\n2,23,5.5,20.0,3.5\n2,17,5.5,10.0,8.5\n1,13,8.0,30.0,2.0\n2,22,5.5,3.0,3.0\n1,12,7.0,30.0,6.0\n2,22,6.5,30.0,2.0\n";</script>
+<script src="app.js"></script>
+</body>
+</html>
