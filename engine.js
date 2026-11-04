@@ -482,10 +482,10 @@
       { id: "nb", name: "Naive Bayes" }
     ]
   };
-  function makeModel(id, task, nClasses, seed) {
+  function makeModel(id, task, nClasses, seed, opts) {
     if (id === "lr") return LinearRegression();
     if (id === "rf") return RandomForest(task, nClasses, seed);
-    if (id === "knn") return kNN(5, task, nClasses);
+    if (id === "knn") return kNN((opts && opts.k) || 5, task, nClasses);
     if (id === "svm") return SVR();
     if (id === "logreg") return LogisticRegression(nClasses);
     if (id === "nb") return NaiveBayes(nClasses);
@@ -517,13 +517,13 @@
     return { CA: ca, F1: F, Precision: P, Recall: R, cm, yp };
   }
 
-  function fitPredict(id, task, K, seed, Xtr, ytr, Xte) {
-    const m = makeModel(id, task, K, seed).fit(Xtr, ytr);
+  function fitPredict(id, task, K, seed, Xtr, ytr, Xte, opts) {
+    const m = makeModel(id, task, K, seed, opts).fit(Xtr, ytr);
     return { model: m, preds: Xte.map(x => m.predict(x)) };
   }
 
   // 교차 검증 (Test and Score - Cross validation)
-  function crossValidate(id, task, K, X, y, folds, seed) {
+  function crossValidate(id, task, K, X, y, folds, seed, opts) {
     const rand = rng(seed + 101);
     const idx = shuffle([...Array(X.length).keys()], rand);
     const yt = [], yp = [];
@@ -531,7 +531,7 @@
       const te = idx.filter((_, i) => i % folds === f), teSet = new Set(te);
       const tr = idx.filter(i => !teSet.has(i));
       if (!tr.length || !te.length) continue;
-      const r = fitPredict(id, task, K, seed, tr.map(i => X[i]), tr.map(i => y[i]), te.map(i => X[i]));
+      const r = fitPredict(id, task, K, seed, tr.map(i => X[i]), tr.map(i => y[i]), te.map(i => X[i]), opts);
       te.forEach((i, k) => { yt.push(y[i]); yp.push(r.preds[k]); });
     }
     return task === "regression" ? regMetrics(yt, yp) : clsMetrics(yt, yp, K);
@@ -560,7 +560,8 @@
   const api = {
     rng, shuffle, parseCSV, inferTypes, buildDataset, column, numStats, catStats, missingInfo, quantile,
     impute, filterRows, suggestRanges, normalize, pearson, correlations, corrStrength,
-    design, splitIdx, experiment, regMetrics, clsMetrics, MODEL_INFO, round, isMissing
+    design, splitIdx, experiment, regMetrics, clsMetrics, MODEL_INFO, round, isMissing,
+    makeModel, fitPredict, crossValidate
   };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.DSEngine = api;
