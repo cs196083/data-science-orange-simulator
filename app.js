@@ -441,7 +441,7 @@
       const st = E.catStats(vals, c.values);
       txt = `• '${c.name}'은(는) ${labels.map((l, i) => `${l}: ${bars[i]}개`).join(", ")}입니다.\n• 가장 많은 범주는 '${st.mode}'(${(100 * st.counts[st.mode] / vals.length).toFixed(0)}%)입니다. 범주 간 개수 차이가 크면 결과가 많은 범주에 치우칠 수 있어요.`;
     }
-    $("#distText").textContent = txt + "\n\n✍ PPT에는 이 문장을 참고하여 '그래서 무엇을 알 수 있는지'를 자신의 말로 덧붙이세요.";
+    $("#distText").textContent = txt + "\n\n✍ 이 문장을 참고하여 '그래서 무엇을 알 수 있는지'를 자신의 말로 덧붙여 보세요.";
   }
   function renderCorr() {
     const cs = E.correlations(S.norm);
@@ -516,7 +516,7 @@
         S.exp = E.experiment(S.norm, { features: S.features, target: S.target, ratio: S.ratio, seed: S.seed, stratify: S.stratify, folds: S.folds, models: S.models });
         S.exp.settings = { features: S.features.slice(), target: S.target, ratio: S.ratio, seed: S.seed, folds: S.folds };
         msg.innerHTML = `✅ 학습 완료! 훈련 ${S.exp.nTrain}개 · 테스트 ${S.exp.nTest}개 <button class="btn" data-go="6" style="margin-left:8px">⑥ 평가 결과 보기 →</button>`;
-        renderStep6(); renderSummary();
+        renderStep6();
       } catch (e) { msg.innerHTML = `<span style="color:#c62828">오류: ${esc(e.message)}</span>`; }
     }, 30);
   }
@@ -602,55 +602,18 @@
     return lines.join("\n");
   }
 
-  // ---------------- 7. PPT ----------------
-  const SLIDES = [
-    ["1. 표지", "프로젝트 제목, 모둠명·이름, 날짜. 제목은 탐구 질문이 드러나게 (예: “잠이 부족하면 스트레스가 높을까?”)", "-"],
-    ["2. 문제 정의", "문제 상황과 근거(통계·기사·경험), 탐구 질문, 가설", "-"],
-    ["3. 기계학습 문제 설계", "target(예측 대상)과 feature(입력), 회귀/분류 중 선택한 이유", "-"],
-    ["4. 데이터 수집", "수집 방법(설문 대상·기간·도구 / 공공데이터 출처), 속성 설명표, 데이터 점검 체크리스트", "File 위젯(Type·Role), Data Table Info"],
-    ["5. 전처리 ① 결측치", "결측치 위치와 개수, 처리 방법과 선택 이유, 처리 전→후 데이터 수", "Feature Statistics, Impute"],
-    ["6. 전처리 ② 이상치·정규화", "이상치 발견 그래프, IQR 범위표, 제거 개수, 정규화 이유", "Scatter Plot, Box Plot, Select Rows, Preprocess"],
-    ["7. 시각화와 분석 ① 분포", "핵심 속성의 분포 그래프와 해석 문장", "Distributions"],
-    ["8. 시각화와 분석 ② 상관관계", "상관계수 순위와 해석, 모델에 쓸 속성 선정 근거", "Correlations"],
-    ["9. 데이터 모델링", "feature/target, 훈련:테스트 비율, 비교한 모델 목록", "전체 워크플로, Select Columns, Data Sampler"],
-    ["10. 평가", "성능 비교표, 최적 모델과 근거(지표 수치), 지표의 의미", "Test and Score (Predictions)"],
-    ["11. 결론과 제안", "탐구 질문에 대한 답, 가설 검증 결과, 문제 해결 제안(누구에게·무엇을)", "-"],
-    ["12. 성찰", "한계(데이터 수·편향·인과 아님), 윤리적 고려, 배운 점·느낀 점·더 알아보고 싶은 점", "-"]
-  ];
+  // ---------------- 7. 마무리 ----------------
   function renderStep7() {
-    $("#slides").innerHTML = SLIDES.map(s => `<div class="slide"><div class="hd">${s[0]}</div><div class="bd">${s[1]}</div><div class="ft">🍊 캡처: ${s[2]}</div></div>`).join("");
     const R = [["문제 정의", "데이터에 기반하여 해결할 수 있는 문제를 선정하고 정의하였는가?"], ["데이터 수집", "문제와 관련된 데이터를 수집하고, 수집 시 확인할 내용(법적·윤리적, 품질)을 반영하였는가?"],
       ["데이터 전처리", "데이터를 시각화·분석·모델링에 필요한 형태로 전처리할 수 있는가?"], ["데이터 시각화와 분석", "문제 해결을 위해 적절한 방법으로 데이터를 시각화하고 분석할 수 있는가?"],
       ["데이터 모델링", "문제 해결을 위해 필요한 데이터 모델을 선정하고 모델링할 수 있는가?"], ["평가", "데이터 모델의 성능을 평가하고 결과를 해석할 수 있는가?"]];
     const saved = JSON.parse(localStorage.getItem("rubric") || "{}");
     $("#rubric").innerHTML = R.map((r, i) => `<tr><td><b>${r[0]}</b></td><td>${r[1]}</td>${["우수", "보통", "미흡"].map(v => `<td><input type="radio" name="rb${i}" value="${v}" ${saved[i] === v ? "checked" : ""}></td>`).join("")}</tr>`).join("");
     $$("#rubric input").forEach(inp => inp.onchange = () => { const s = JSON.parse(localStorage.getItem("rubric") || "{}"); s[inp.name.slice(2)] = inp.value; localStorage.setItem("rubric", JSON.stringify(s)); });
-    $("#copySummary").onclick = () => { navigator.clipboard.writeText($("#summaryText").textContent).then(() => { $("#copySummary").textContent = "✅ 복사됨"; setTimeout(() => $("#copySummary").textContent = "📋 요약 복사", 1500); }); };
-    renderSummary();
   }
-  function renderSummary() {
-    if (!S.raw) return;
-    const raw = S.raw, mi = E.missingInfo(raw);
-    const impName = { none: "처리하지 않음", drop: "결측치가 있는 행 삭제", mean: "평균(최빈값)으로 대체", median: "중앙값(최빈값)으로 대체" }[S.imputeMethod];
-    const rg = Object.keys(S.ranges).filter(k => S.rangeOn[k] && S.types[k] === "num").map(k => `${k} ${S.ranges[k][0]}~${S.ranges[k][1]}`).join(", ");
-    const cs = E.correlations(S.norm).filter(p => p.a === S.target || p.b === S.target);
-    let t = `[데이터] ${S.name}: ${raw.rows.length}개 사례, ${raw.cols.length}개 속성 (${raw.cols.map(c => c.name + "(" + (c.type === "num" ? "수치형" : "범주형") + ")").join(", ")})\n`;
-    t += `[결측치] ${mi.missing}칸 (${mi.pct.toFixed(1)}%) → ${impName} → ${S.imputed.rows.length}개\n`;
-    t += `[이상치] 확인 범위: ${rg || "적용 안 함"} → ${S.filter.removed}개 제거 → ${S.filter.ds.rows.length}개\n`;
-    t += `[정규화] ${{ none: "하지 않음", minmax: "0~1 범위로 정규화", zscore: "표준화(평균 0, 분산 1)" }[S.normMethod]}\n`;
-    if (cs.length) t += `[상관관계] target '${S.target}'과: ${cs.map(p => `${p.a === S.target ? p.b : p.a} r=${fmt(p.r)}`).join(", ")}\n`;
-    if (S.exp) {
-      const e = S.exp, key = e.task === "regression" ? "R2" : "CA";
-      t += `[모델링] target=${e.settings.target}, feature=${e.settings.features.join(", ")} / 훈련 ${e.nTrain}개 : 테스트 ${e.nTest}개 (${Math.round(e.settings.ratio * 100)}:${100 - Math.round(e.settings.ratio * 100)}) / ${e.task === "regression" ? "회귀" : "분류"}\n`;
-      t += `[평가] ` + e.results.map(r => `${r.name} ${key === "R2" ? "R²" : key}=${fmt(r.cv[key])}(교차검증)` + (r.test ? `/${fmt(r.test[key])}(테스트)` : "")).join(", ") + "\n\n";
-      t += interpret(e);
-    } else t += `[모델링·평가] 아직 학습하지 않았습니다. ⑤ 단계에서 모델을 학습하세요.`;
-    $("#summaryText").textContent = t;
-  }
-
   // ---------------- 렌더링 ----------------
   function renderAll() {
-    renderDatasetBar(); renderStep2(); renderStep3(); renderStep4(); renderStep5(); renderStep6(); renderSummary();
+    renderDatasetBar(); renderStep2(); renderStep3(); renderStep4(); renderStep5(); renderStep6();
   }
   async function loadSample() {
     let text = window.SAMPLE_CSV;
@@ -660,9 +623,34 @@
     if (/[?&]demo/.test(location.search) && !S.exp) { S.types.grade = "cat"; recompute(); train(); }
   }
 
+  // 오렌지 따라 하기: 단계별 체크 + 진행률
+  function setupHowto() {
+    $$("section.page").forEach(sec => {
+      const st = sec.dataset.step;
+      sec.querySelectorAll("ol.howto").forEach((ol, oi) => {
+        if (st === "0") return;
+        const key = "howto" + st + "_" + oi, saved = JSON.parse(localStorage.getItem(key) || "[]");
+        ol.classList.add("tasks");
+        const bar = document.createElement("div");
+        bar.className = "taskbar";
+        ol.parentNode.insertBefore(bar, ol);
+        const upd = () => {
+          const lis = [...ol.children], n = lis.filter(l => l.querySelector("input").checked).length;
+          bar.innerHTML = `<span>실습 진행 ${n} / ${lis.length}</span><i><b style="width:${n / lis.length * 100}%"></b></i>${n === lis.length ? " 🎉 이 단계 완료!" : ""}`;
+          localStorage.setItem(key, JSON.stringify(lis.map(l => l.querySelector("input").checked)));
+        };
+        [...ol.children].forEach((li, i) => {
+          const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = !!saved[i]; cb.onchange = upd;
+          li.prepend(cb);
+        });
+        upd();
+      });
+    });
+  }
+
   // 시작
   const h = parseInt((location.hash || "").replace("#s", ""));
   if (!isNaN(h) && h >= 0 && h <= 7) S.step = h;
-  renderFlows(); renderStep1(); renderStep7(); renderNav();
+  renderFlows(); renderStep1(); renderStep7(); setupHowto(); renderNav();
   loadSample();
 })();

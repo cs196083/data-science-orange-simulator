@@ -2,7 +2,7 @@
 
 교과서 「Ⅳ. 데이터 과학 프로젝트 – 일상생활의 데이터에 기반한 스트레스 지수 예측」(174~195쪽)을
 오렌지(Orange Data Mining)로 단계별로 따라 하고, **학생이 자기 데이터(CSV)** 로 같은 과정을 연습한 뒤
-발표용 PPT를 만들 수 있도록 돕는 수업 자료입니다.
+실습 진행을 단계별로 체크하며 확인할 수 있도록 돕는 수업 자료입니다.
 
 ## 웹 시뮬레이터
 👉 **https://cs196083.github.io/data-science-orange-simulator/**
@@ -15,7 +15,7 @@
 | ④ 시각화와 분석 | 분포, 상관계수 | Distributions, Correlations |
 | ⑤ 데이터 모델링 | feature/target 분리, 7:3 분할, 여러 모델 학습 | Select Columns, Data Sampler, Linear Regression, Random Forest, kNN, SVM |
 | ⑥ 평가 | 교차 검증, MSE·RMSE·MAE·R² (분류: CA·F1 등) 비교 | Test and Score, Predictions |
-| PPT | 12장 슬라이드 구성, 결과 자동 요약, 자기 평가표 | - |
+| 마무리 | 프로젝트 자기 평가표, 나만의 데이터 찾기 아이디어 | - |
 
 - 위쪽 **📂 내 CSV 불러오기**로 학생 데이터를 넣으면 모든 단계가 그 데이터로 다시 계산됩니다 (파일은 브라우저 밖으로 전송되지 않음).
 - target이 숫자면 회귀, 범주형이면 분류 모델로 자동 전환됩니다.
